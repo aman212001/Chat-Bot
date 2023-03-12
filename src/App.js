@@ -1,15 +1,9 @@
-import logo from "./logo.svg";
+import { useState, useEffect } from "react";
+
 import "./normal.css";
 import "./App.css";
 
-import { useState, useEffect } from "react";
-import { ChatCompletionRequestMessageRoleEnum } from "openai";
-
 function App() {
-  useEffect(() => {
-    getEngines();
-  }, []);
-
   const [input, setInput] = useState("");
   const [models, setModels] = useState([]);
   const [chatLog, setChatLog] = useState([
@@ -35,73 +29,36 @@ function App() {
         console.log(data.models.data);
         setModels(data.models.data);
       });
+  }
 
-    async function handleSubmit(e) {
-      e.preventDefault();
-      let chatLogNew = [...chatLog, { user: "me", message: `${input}` }];
-      setInput("");
-      setChatLog(chatLogNew);
-      //Fetch response to the api and then combining the chatlog array of message and sending it as a message to the localhost : 3000 as a post
-      const messages = chatLogNew.map((message) => message.message).join("\n");
-      const response = await fetch("http://localhost:3080/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          message: messages,
-        }),
-      });
+  async function handleSubmit(e) {
+    e.preventDefault();
+    let chatLogNew = [...chatLog, { user: "me", message: `${input}` }];
+    setInput("");
+    setChatLog(chatLogNew);
+    //Fetch response to the api and then combining the chatlog array of message and sending it as a message to the localhost : 3000 as a post
+    const messages = chatLogNew.map((message) => message.message).join("\n");
+    const response = await fetch("http://localhost:3080/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        message: messages,
+      }),
+    });
 
-      const data = await response.json();
-      setChatLog([...chatLogNew, { user: "gpt", message: `${data.message}` }]);
-      //console.log(data.message);
-    }
-
-    return (
-      <div className="App">
-        <aside className="sidemenu">
-          <div className="side-menu-button" onClick={clearChat}>
-            <span>+</span>
-            New Chat
-          </div>
-          {/* <div className="models">
-        <select>
-            {models.map((model,index) => (
-            <option key={model.id} value={model.id}>{model.id}
-            </option>
-            ))}
-        </select>
-      </div>   */}
-        </aside>
-        <section className="chatbox">
-          <div className="chat-log">
-            {chatLog.map((message, index) => (
-              <ChatMessage key={index} message={message} />
-            ))}
-          </div>
-          <div className="chat-input-holder">
-            <form onSubmit={handleSubmit}>
-              <input
-                rows="1"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                className="chat-input-textarea"
-                placeholder="Type your text here"
-              ></input>
-            </form>
-          </div>
-        </section>
-      </div>
-    );
+    const data = await response.json();
+    setChatLog([...chatLogNew, { user: "gpt", message: `${data.message}` }]);
+    //console.log(data.message);
   }
 
   const ChatMessage = ({ message }) => {
     return (
-      <div className={`chat-message ${message.user == "gpt" && "chatgpt"}`}>
+      <div className={`chat-message ${message.user === "gpt" && "chatgpt"}`}>
         <div className="chat-message-center">
-          <div className={`avatar ${message.user == "gpt" && "chatgpt"}`}>
-            {message.user == "gpt" && (
+          <div className={`avatar ${message.user === "gpt" && "chatgpt"}`}>
+            {message.user === "gpt" && (
               <svg
                 width={41}
                 height={41}
@@ -122,6 +79,47 @@ function App() {
       </div>
     );
   };
+
+  useEffect(() => {
+    getEngines();
+  }, []);
+
+  return (
+    <div className="App">
+      <aside className="sidemenu">
+        <div className="side-menu-button" onClick={clearChat}>
+          <span>+</span>
+          New Chat
+        </div>
+        <div className="models">
+      {/* <select>
+          {models.map((model,index) => (
+          <option key={model.id} value={model.id}>{model.id}
+          </option>
+          ))}
+      </select> */}
+    </div>  
+      </aside>
+      <section className="chatbox">
+        <div style={{overflow:"scroll", height:"85vh"}} className="chat-log">
+          {chatLog.map((message, index) => (
+            <ChatMessage key={index} message={message} />
+          ))}
+        </div>
+        <div className="chat-input-holder">
+          <form onSubmit={handleSubmit}>
+            <input
+              rows="1"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              className="chat-input-textarea"
+              placeholder="Type your text here"
+            ></input>
+          </form>
+        </div>
+      </section>
+    </div>
+  );
 }
 
 export default App;
