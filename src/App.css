@@ -63,9 +63,8 @@ left: 0; right: 0;
   text-align: left;
 }
 
-.chat-messasge.chatgpt{
+.chatgpt-message{
   background-color: #444654;
-  
 }
 
 .chat-message-center{
